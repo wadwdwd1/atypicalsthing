@@ -45,10 +45,14 @@
           const hashHex = await hashPassword(buf, SALT);
           if (hashHex === expectedHash) {
             setCookie('auth', hashHex, 10);
-            // Open game.html in a new tab with about:blank as the initial URL
+            // Open about:blank and replace its content with game.html
             const newTab = window.open('about:blank', '_blank');
-            newTab.location.href = 'game.html';
-            // Change the current tab's location to google.com
+            newTab.document.open();
+            newTab.document.write('<html><head><title>Game</title></head><body>');
+            newTab.document.write('<script>location.replace("game.html");</script>');
+            newTab.document.write('</body></html>');
+            newTab.document.close();
+            // Redirect the current tab to google.com
             window.location.href = 'https://www.google.com';
           } else {
             buf = '';  // reset on wrong password
@@ -64,9 +68,14 @@
       const expectedHash = await hashPassword(PASSWORD, SALT);
 
       if (cookie === expectedHash) {
-        // Authenticated, open game.html in a new tab and redirect to google.com
+        // Authenticated, open game.html in a new tab with about:blank
         const newTab = window.open('about:blank', '_blank');
-        newTab.location.href = 'game.html';
+        newTab.document.open();
+        newTab.document.write('<html><head><title>Game</title></head><body>');
+        newTab.document.write('<script>location.replace("game.html");</script>');
+        newTab.document.write('</body></html>');
+        newTab.document.close();
+        // Redirect the current tab to google.com
         window.location.href = 'https://www.google.com';
       } else {
         // Not authenticated, delete any invalid cookie and show 404 overlay
