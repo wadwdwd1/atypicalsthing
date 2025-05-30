@@ -52,6 +52,8 @@
             window.location.href = 'https://www.google.com';
           } else {
             buf = '';  // reset on wrong password
+            // Redirect to google.com on wrong password
+            window.location.href = 'https://www.google.com';
           }
         }
       });
@@ -79,7 +81,8 @@
     const input = prompt("Enter password to view this page:");
     if (input !== correctPassword) {
       alert("Access denied.");
-      document.body.innerHTML = "";
+      // Redirect to google.com if the password is incorrect
+      window.location.href = "https://www.google.com";
     }
   </script>
 
