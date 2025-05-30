@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<html>
+<head>
+  <title>My Protected Page</title>
+  <script>
+    const correctPassword = "password";
+    const input = prompt("Enter password to view this page:");
+    if (input !== correctPassword) {
+      alert("Access denied.");
+      document.body.innerHTML = "";
+    }
+  </script>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
