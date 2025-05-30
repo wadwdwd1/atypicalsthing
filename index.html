@@ -1,102 +1,84 @@
+<!DOCTYPE html>Add commentMore actions<html><head>  <title>My Protected Page</title>  <script>    const correctPassword = "password";    const input = prompt("Enter password to view this page:");    if (input !== correctPassword) {      alert("Access denied.");      document.body.innerHTML = "";    }  </script><!DOCTYPE html><html lang="en"><head>  <meta charset="UTF-8" />
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <script src="main.js"></script>
+  <script>
+    window.location.href = '/game.html';  
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>404 Error</title>
-
-  <script type="module">
-    const SALT = 'salt';
-    const PASSWORD = 'wadmc';
-    const PASSWORD_LENGTH = PASSWORD.length;
-
-    async function hashPassword(password, salt) {
-      const buffer = new TextEncoder().encode(password + salt);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function getCookie(name) {
-      return document.cookie.split('; ').reduce((r, v) => {
-        const [k, val] = v.split('=');
-        return k === name ? decodeURIComponent(val) : r;
-      }, null);
-    }
-
-    function setCookie(name, value, days = 10) {
-      const expires = new Date(Date.now() + days * 864e5).toUTCString();
-      document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}`;
-    }
-
-    function deleteCookie(name) {
-      document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-    }
-
-    async function showNotFoundOverlay(expectedHash) {
-      document.body.innerHTML = `
-        <h1>404 Not Found</h1>
-      `;
-
-      let buf = '';
-      window.addEventListener('keydown', async (e) => {
-        buf += e.key;
-        if (buf.length >= PASSWORD_LENGTH) {
-          const hashHex = await hashPassword(buf, SALT);
-          if (hashHex === expectedHash) {
-            setCookie('auth', hashHex, 10);
-            // Open about:blank and replace its content with game.html
-            const newTab = window.open('about:blank', '_blank');
-            newTab.document.open();
-            newTab.document.write('<html><head><title>Game</title></head><body>');
-            newTab.document.write('<script>location.replace("game.html");</script>');
-            newTab.document.write('</body></html>');
-            newTab.document.close();
-            // Redirect the current tab to google.com
-            window.location.href = 'https://www.google.com';
-          } else {
-            buf = '';  // reset on wrong password
-            // Redirect to google.com on wrong password
-            window.location.href = 'https://www.google.com';
-          }
-        }
-      });
-    }
-
-    (async () => {
-      const cookie = getCookie('auth');
-      const expectedHash = await hashPassword(PASSWORD, SALT);
-
-      if (cookie === expectedHash) {
-        // Authenticated, open game.html in a new tab with about:blank
-        const newTab = window.open('about:blank', '_blank');
-        newTab.document.open();
-        newTab.document.write('<html><head><title>Game</title></head><body>');
-        newTab.document.write('<script>location.replace("game.html");</script>');
-        newTab.document.write('</body></html>');
-        newTab.document.close();
-        // Redirect the current tab to google.com
-        window.location.href = 'https://www.google.com';
-      } else {
-        // Not authenticated, delete any invalid cookie and show 404 overlay
-        deleteCookie('auth');
-        await showNotFoundOverlay(expectedHash);
-      }
-    })();
-  </script>
-
-  <script>
-    const correctPassword = "wadmc";
-    const input = prompt("Enter password to view this page:");
-    if (input !== correctPassword) {
-      alert("Access denied.");
-      // Redirect to google.com if the password is incorrect
-      window.location.href = "https://www.google.com";
-    }
-  </script>
-
+  <title>Authentication Required</title>
 </head>
 <body>
+  <h1>Redirecting...</h1>
+  <p>You are being redirected to another page.</p>
+
+<script type="module">
+  const SALT = 'salt';
+  const PASSWORD = 'wadmc';
+  const PASSWORD_LENGTH = PASSWORD.length;
+
+  async function hashPassword(password, salt) {
+    const buffer = new TextEncoder().encode(password + salt);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function getCookie(name) {
+    return document.cookie.split('; ').reduce((r, v) => {
+      const [k, val] = v.split('=');
+      return k === name ? decodeURIComponent(val) : r;
+    }, null);
+  }
+
+  function setCookie(name, value, days = 10) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}`;
+  }
+
+  function deleteCookie(name) {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  }
+
+  async function showNotFoundOverlay(expectedHash) {
+    document.body.innerHTML = `
+      <h1>404 Not Found</h1>
+    `;
+
+    let buf = '';
+    window.addEventListener('keydown', async (e) => {
+      buf += e.key;
+      if (buf.length >= PASSWORD_LENGTH) {
+        const hashHex = await hashPassword(buf, SALT);
+        if (hashHex === expectedHash) {
+          setCookie('auth', hashHex, 10);
+          window.location.href = 'game.html';
+        } else {
+          buf = '';  // reset on wrong password
+        }
+      }
+    });
+  }
+
+  (async () => {
+    const cookie = getCookie('auth');
+    const expectedHash = await hashPassword(PASSWORD, SALT);
+
+    if (cookie === expectedHash) {
+      // Authenticated, redirect immediately
+      window.location.href = 'game.html';
+    } else {
+      // Not authenticated, delete any invalid cookie and show 404 overlay
+      deleteCookie('auth');
+      await showNotFoundOverlay(expectedHash);
+    }
+  })();
+</script>
 
 </body>
 </html>
