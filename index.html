@@ -1,16 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirecting...</title>
-  <script src="main.js"></script>
-  <script>
-    window.location.href = '/game.html';  
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Authentication Required</title>
 </head>
 <body>
-  <h1>Redirecting...</h1>
-  <p>You are being redirected to another page.</p>
+
+<script type="module">
+  const SALT = 'salt';
+  const PASSWORD = 'wadmc';
+  const PASSWORD_LENGTH = PASSWORD.length;
+
+  async function hashPassword(password, salt) {
+    const buffer = new TextEncoder().encode(password + salt);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function getCookie(name) {
+    return document.cookie.split('; ').reduce((r, v) => {
+      const [k, val] = v.split('=');
+      return k === name ? decodeURIComponent(val) : r;
+    }, null);
+  }
+
+  function setCookie(name, value, days = 10) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}`;
+  }
+
+  function deleteCookie(name) {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  }
+
+  async function showNotFoundOverlay(expectedHash) {
+    document.body.innerHTML = `
+      <h1>404 Not Found</h1>
+    `;
+
+    let buf = '';
+    window.addEventListener('keydown', async (e) => {
+      buf += e.key;
+      if (buf.length >= PASSWORD_LENGTH) {
+        const hashHex = await hashPassword(buf, SALT);
+        if (hashHex === expectedHash) {
+          setCookie('auth', hashHex, 10);
+          window.location.href = 'game.html';
+        } else {
+          buf = '';  // reset on wrong password
+        }
+      }
+    });
+  }
+
+  (async () => {
+    const cookie = getCookie('auth');
+    const expectedHash = await hashPassword(PASSWORD, SALT);
+
+    if (cookie === expectedHash) {
+      // Authenticated, redirect immediately
+      window.location.href = 'game.html';
+    } else {
+      // Not authenticated, delete any invalid cookie and show 404 overlay
+      deleteCookie('auth');
+      await showNotFoundOverlay(expectedHash);
+    }
+  })();
+</script>
+
 </body>
 </html>
