@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authentication Required</title>
+  <title>404 Error</title>
 
   <script type="module">
     const SALT = 'salt';
@@ -41,7 +41,7 @@
     async function showNotFoundOverlay(expectedHash) {
       document.body.innerHTML = `
         <h1>404 Not Found</h1>
-        <p>Press any key to enter the password.</p>
+        <p>No webpage was found on this server.</p>
       `;
 
       let inputBuffer = '';
